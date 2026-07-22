@@ -28,6 +28,21 @@ typst init @preview/scholia
 Or, using this repository directly as a local package, copy the `template/`
 contents into a new project and import the package.
 
+### Start a new notes project (recommended)
+
+Use the bundled scaffolding script. It installs scholia into Typst's local
+package namespace (so it works without being published), copies the template to
+the target path, wires up the import, and creates a git repository:
+
+```bash
+./new-notes.sh ~/Notes/analysis-fs26 "Analysis I"
+cd ~/Notes/analysis-fs26
+typst watch main.typ
+```
+
+Pass `--force` to refresh the installed local package after you change scholia
+itself. Run `./new-notes.sh --help` for details.
+
 ### Minimal document
 
 ```typ
