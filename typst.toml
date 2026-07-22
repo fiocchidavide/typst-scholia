@@ -1,0 +1,15 @@
+[package]
+name = "scholia"
+version = "0.1.0"
+entrypoint = "lib.typ"
+authors = ["Davide Fiocchi <davidefiocchi2@gmail.com>"]
+license = "MIT"
+description = "A universal template for typeset lecture notes and study scripts, with coloured theorem environments on top of the ilm book template."
+repository = "https://github.com/fiocchidavide/typst-scholia"
+keywords = ["template", "lecture-notes", "notes", "theorem", "book", "academic"]
+categories = ["education"]
+
+[template]
+path = "template"
+entrypoint = "main.typ"
+thumbnail = "thumbnail.png"
