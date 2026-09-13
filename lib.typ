@@ -209,6 +209,10 @@
 //                      your own document so the .bib path resolves there, e.g.
 //                      `bibliography: bibliography("refs.bib")`.
 //   heading-numbering — heading numbering pattern (default "1.1")
+//   area-size / work-size / division-size — text size of the three structural
+//                      heading levels. These are applied as show rules rather
+//                      than baked into the heading bodies, so they do not leak
+//                      into the table of contents, which copies those bodies.
 //   structural-levels — how many heading levels sit above the chapter (see
 //                      `scholia-area` / `scholia-work` / `scholia-division`).
 //                      0 (default) is a plain single-source document. With 3,
@@ -230,6 +234,9 @@
   bibliography: none,
   heading-numbering: "1.1",
   structural-levels: 0,
+  area-size: 2.2em,
+  work-size: 1.6em,
+  division-size: 1.25em,
   cover-page: auto,
   ..ilm-args,
   body,
@@ -266,6 +273,9 @@
     // A numbering function returning `none` still reserves the number gutter,
     // which would indent every structural heading by a phantom number.
     set heading(hanging-indent: 0pt)
+    show heading.where(level: 1): set text(size: area-size)
+    show heading.where(level: 2): set text(size: work-size)
+    show heading.where(level: 3): set text(size: division-size)
     show ref: scholia-xref(2)
     set page(footer: scholia-footer(2, chapter-level))
     // Included chapter files write `=` for their chapter and `==` for its
