@@ -46,7 +46,7 @@ itself. Run `./new-notes.sh --help` for details.
 ### Minimal document
 
 ```typ
-#import "@preview/scholia:0.1.0": *
+#import "@preview/scholia:0.2.0": *
 
 #show: scholia.with(
   title: [My Lecture Notes],
@@ -112,15 +112,38 @@ Returns a dictionary of environment functions. Destructure the ones you need.
 | ------------------ | ------- | --------------------------------------------------------------------------- |
 | `inherited-levels` | `2`     | Heading levels the block number inherits. `2` → `Definition 2.3`; `1` → `Definition 2` (per chapter). Deeper heading nesting than this value is fine. |
 | `colors`           | `(:)`   | Override any environment colour, e.g. `(theorem: purple)`.                   |
-| `config`           | `(:)`   | Override styling keys (`border-width`, `label-size`, `proof-label`, `qed-symbol`, …). |
+| `config`           | `(:)`   | Override styling keys for every environment (`border-width`, `inset`, `label-size`, `proof-label`, `qed-symbol`, `source-size`, `source-color`, `name-separator`, …). |
+| `env-config`       | `(:)`   | Override styling keys for one environment only, e.g. `(example: (border-width: 0pt, inset: 0pt))`. Falls back to `config`, then to the defaults. |
 
 ```typ
-#let (definition, theorem, proof) = scholia-theorems(
+#let (definition, theorem, example, proof) = scholia-theorems(
   inherited-levels: 1,
   colors: (theorem: purple.darken(20%)),
   config: (border-width: 2pt),
+  // Examples flush with the body text, no coloured rule:
+  env-config: (example: (border-width: 0pt, inset: 0pt)),
 )
 ```
+
+### Naming and attributing a block
+
+Every environment takes two optional arguments:
+
+| Argument | Description                                                                       |
+| -------- | --------------------------------------------------------------------------------- |
+| `title`  | The statement's own name, set in italics after the block number.                   |
+| `source` | An attribution for borrowed material, set small and grey, flush with the right margin of the same line. |
+
+```typ
+#definition(
+  title: "Probability measure",
+  source: [Definition 1.3 in @ross2023secondcourse],
+)[ ... ]
+```
+
+Either may be given alone. With `source` but no `title`, the separator before
+the name is omitted, so the line reads `Definition 1.3.4` on the left and the
+attribution on the right, with nothing dangling in between.
 
 ## Dependencies
 

@@ -1,4 +1,4 @@
-#import "@preview/scholia:0.1.0": *
+#import "@preview/scholia:0.2.0": *
 
 #show: scholia.with(
   title: [My Lecture Notes],

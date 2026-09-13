@@ -4,7 +4,7 @@
 // environments are available in its own scope. Tweak colours or config here in
 // one place and every chapter follows.
 
-#import "@preview/scholia:0.1.0": scholia-theorems
+#import "@preview/scholia:0.2.0": scholia-theorems
 
 #let (
   definition,
