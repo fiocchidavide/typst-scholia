@@ -49,10 +49,11 @@
 //
 // The returned function takes `title` (the statement's own name), `source` (an
 // attribution, shown right-aligned on the same line), or neither.
-#let standard-environment(title, counter, cfg, env-color) = {
+#let standard-environment(title, counter, cfg, env-color, block-numbering) = {
   let block = mathblock(
     blocktitle: title,
     counter: counter,
+    numbering: block-numbering,
     stroke: (left: cfg.border-width + env-color),
     inset: cfg.inset,
     breakable: cfg.breakable,
@@ -100,10 +101,16 @@
 //   #let (definition, theorem, proof, ..) = scholia-theorems()
 //
 // Arguments:
-//   inherited-levels — how many heading levels the block number inherits.
-//     2 (default) numbers blocks as chapter.section, e.g. "Definition 2.3".
-//     1 numbers them per chapter, e.g. "Definition 2". Deeper heading nesting
-//     than this value works fine thanks to rich-counters >= 0.2.2.
+//   inherited-levels — how many heading levels the block number inherits, and
+//     shows. 2 (default) numbers blocks as chapter.section, e.g.
+//     "Definition 2.3". 1 numbers them per chapter, e.g. "Definition 2".
+//   structural-levels — how many heading levels sit *above* the chapter and
+//     should be counted but not displayed (see `scholia`'s argument of the
+//     same name). The counter inherits `structural-levels + inherited-levels`
+//     levels, so it still restarts at every section and every block carries
+//     its full address, but only the last `inherited-levels + 1` components
+//     are shown. Deeper heading nesting than this works fine thanks to
+//     rich-counters >= 0.2.2.
 //   colors — override any environment colour, e.g. (theorem: purple).
 //   config — override styling keys for every environment, e.g.
 //     (border-width: 2pt).
@@ -113,6 +120,7 @@
 //     `default-config`.
 #let scholia-theorems(
   inherited-levels: 2,
+  structural-levels: 0,
   colors: (:),
   config: (:),
   env-config: (:),
@@ -121,9 +129,19 @@
   let cfg-for = name => cfg + env-config.at(name, default: (:))
 
   // The shared counter, rebuilt per call so `inherited-levels` takes effect.
+  // It inherits the structural levels too, so a block's full address is
+  // area.work.division.chapter.section.n even though only the tail is shown.
   let mathcounter = rich-counter(
     identifier: "scholia-mathblocks",
-    inherited_levels: inherited-levels,
+    inherited_levels: structural-levels + inherited-levels,
+  )
+
+  // Display only the local tail of the address. great-theorems feeds this same
+  // function to both the printed number and the `ref` metadata, so the two
+  // never disagree.
+  let block-numbering = (..nums) => std.numbering(
+    "1.1",
+    ..nums.pos().slice(structural-levels),
   )
 
   let palette = (
@@ -141,6 +159,7 @@
     mathcounter,
     cfg-for(key),
     palette.at(key),
+    block-numbering,
   )
 
   (

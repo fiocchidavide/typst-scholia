@@ -104,6 +104,46 @@ template/
 | `cover-page`        | `auto`             | Override the generated cover with your own content, or `none`.     |
 | `..ilm-args`        | —                  | Any extra named arguments are forwarded to `ilm` (e.g. `footer`, `appendix`, `figure-index: (enabled: true)`). |
 
+### Structure above the chapter
+
+A compendium that collects several sources needs levels above the chapter.
+Pass `structural-levels: 3` to `scholia` and build the tree with
+`scholia-area`, `scholia-work` and `scholia-division`:
+
+```
+1  area      Probability
+2  work      A Second Course in Probability      <- the source
+3  division  Summary                             <- or Exercises, Notes
+4  chapter   Measure Theory and Laws of ...      <- the source's own chapter
+5  section   Probability Spaces
+```
+
+Chapter files keep writing `=` for the chapter and `==` for its sections;
+scholia offsets them into place. **Numbers stay local**: the chapter shows
+`1`, a section `1.3`, a statement `Definition 1.3.1`, exactly as if the work
+stood alone. The structural levels are counted but not displayed, so every
+element still has a full, unique address underneath — and a reference that
+points outside its own work is automatically qualified with the work's name.
+
+Pass the same `structural-levels` to `scholia-theorems`, so block numbers are
+sliced the same way.
+
+```typ
+#show: scholia.with(title: [My Compendium], structural-levels: 3)
+#let (definition, ..) = scholia-theorems(structural-levels: 3)
+
+#scholia-area([Probability])
+#scholia-work([A Second Course in Probability], description: [Ross and Pekoz, 2023.])
+#scholia-division([Summary])
+#scholia-chapter([Measure Theory], description: [What this chapter covers.])
+#include "notes/ross/01-measure-theory.typ"
+```
+
+One caveat worth stating: never hide the structural numbers with
+`set heading(numbering: none)`. Unnumbered headings do not step the heading
+counter, which silently zeroes every address. scholia hides them with a
+numbering *function* that returns `none`, which keeps the counting intact.
+
 ### `scholia-chapter(..)` — a chapter opening
 
 Gives a chapter file a proper header: a numbered chapter heading, an optional
