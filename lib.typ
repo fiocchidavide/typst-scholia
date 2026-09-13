@@ -51,6 +51,7 @@
 // Named arguments:
 //   subtitle     — a line under the title, e.g. the source being summarised
 //   description  — a short blurb, ruled off from the body text
+//   break-before — start the chapter on a new page (default false)
 //   depth        — heading depth relative to the current offset (default 1)
 //   level        — an absolute heading level, overriding `depth`
 //   subtitle-size / description-size — text sizes
@@ -59,12 +60,17 @@
   title,
   subtitle: none,
   description: none,
+  break-before: false,
   level: auto,
   depth: 1,
   subtitle-size: 1.1em,
   description-size: 0.95em,
   accent: gray.darken(25%),
 ) = {
+  // The first chapter under a work or division follows its headings on the
+  // same page; later ones start a page of their own.
+  if break-before { pagebreak(weak: true) }
+
   // `level` is absolute and ignores `set heading(offset: ..)`, so headings are
   // emitted by `depth` unless an absolute level is asked for explicitly.
   if level == auto { heading(depth: depth, title) } else { heading(level: level, title) }
@@ -102,23 +108,26 @@
 // These three helpers emit *absolute* levels, so they are unaffected by the
 // heading offset that shifts an included chapter's own markup into place.
 
-#let structural-heading(title, level, size, accent, blurb) = {
-  heading(level: level, text(size: size, title))
-  if blurb != none {
-    block(above: 0.8em, below: 1.4em, text(size: 0.95em, fill: accent)[#blurb])
-  }
+// An area opens a page of its own, with nothing on it but its title.
+#let scholia-area(title) = {
+  pagebreak(weak: true)
+  v(1fr)
+  align(center, heading(level: 1, title))
+  v(1fr)
+  pagebreak(weak: true)
 }
 
-#let scholia-area(title, description: none, accent: gray.darken(25%)) = {
-  structural-heading(title, 1, 1.9em, accent, description)
+// A work and its divisions are not title pages: they sit directly above the
+// first chapter, and their descriptions read as ordinary body text.
+#let scholia-work(title, description: none) = {
+  pagebreak(weak: true)
+  heading(level: 2, title)
+  if description != none { description }
 }
 
-#let scholia-work(title, description: none, accent: gray.darken(25%)) = {
-  structural-heading(title, 2, 1.45em, accent, description)
-}
-
-#let scholia-division(title, description: none, accent: gray.darken(25%)) = {
-  structural-heading(title, 3, 1.15em, accent, description)
+#let scholia-division(title, description: none) = {
+  heading(level: 3, title)
+  if description != none { description }
 }
 
 // Heading numbering that hides the structural levels while still counting
@@ -257,8 +266,6 @@
     // A numbering function returning `none` still reserves the number gutter,
     // which would indent every structural heading by a phantom number.
     set heading(hanging-indent: 0pt)
-    show heading.where(level: 1): it => { pagebreak(weak: true); it }
-    show heading.where(level: chapter-level): it => { pagebreak(weak: true); it }
     show ref: scholia-xref(2)
     set page(footer: scholia-footer(2, chapter-level))
     // Included chapter files write `=` for their chapter and `==` for its
