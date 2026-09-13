@@ -104,6 +104,33 @@ template/
 | `cover-page`        | `auto`             | Override the generated cover with your own content, or `none`.     |
 | `..ilm-args`        | —                  | Any extra named arguments are forwarded to `ilm` (e.g. `footer`, `appendix`, `figure-index: (enabled: true)`). |
 
+### `scholia-chapter(..)` — a chapter opening
+
+Gives a chapter file a proper header: a numbered chapter heading, an optional
+subtitle, and an optional description ruled off from the body. Because the
+heading is a real level-1 heading, it drives the table of contents and the
+running header — so a chapter can be named after its source rather than after
+its contents.
+
+```typ
+#scholia-chapter(
+  [A Second Course in Probability],
+  subtitle: [Measure theory and laws of large numbers],
+  description: [My summary of the first chapter, with the book's own numbering
+    kept on the right so anything here can be looked up in the original.],
+)
+```
+
+| Argument            | Default           | Description                                  |
+| ------------------- | ----------------- | -------------------------------------------- |
+| `title` (positional)| —                 | The chapter heading.                          |
+| `subtitle`          | `none`            | A line under the title.                       |
+| `description`       | `none`            | A blurb, ruled off from the body text.        |
+| `level`             | `1`               | Heading level.                                |
+| `subtitle-size`     | `1.1em`           | Subtitle text size.                           |
+| `description-size`  | `0.95em`          | Description text size.                        |
+| `accent`            | `gray.darken(25%)`| Colour of subtitle, description, and rule.    |
+
 ### `scholia-theorems(..)` — the environments
 
 Returns a dictionary of environment functions. Destructure the ones you need.

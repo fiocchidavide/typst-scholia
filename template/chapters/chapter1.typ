@@ -1,8 +1,13 @@
 #import "../environments.typ": *
 
-= Getting Started
-
-An introductory paragraph. Cite sources with #cite(<magnus2024>) as usual.
+#scholia-chapter(
+  [Getting Started],
+  subtitle: [A subtitle, if the chapter wants one],
+  description: [
+    A short description of what this chapter covers and where it comes from.
+    Cite sources with #cite(<magnus2024>) as usual.
+  ],
+)
 
 == A first section
 

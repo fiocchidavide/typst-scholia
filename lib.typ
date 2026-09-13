@@ -35,6 +35,56 @@
   ]
 }
 
+// Opening header for a chapter file: a numbered chapter heading, an optional
+// subtitle, and an optional description set off from the body.
+//
+// Because the heading is a real level-1 heading, it drives the table of
+// contents and the running header, so a chapter can be named after its source
+// ("A Second Course in Probability") rather than after its contents.
+//
+//   #scholia-chapter(
+//     [A Second Course in Probability],
+//     subtitle: [Ross and Pekoz, 2nd edition],
+//     description: [My summary of the book, chapter by chapter.],
+//   )
+//
+// Named arguments:
+//   subtitle     — a line under the title, e.g. the source being summarised
+//   description  — a short blurb, ruled off from the body text
+//   level        — heading level (default 1)
+//   subtitle-size / description-size — text sizes
+//   accent       — colour of the subtitle and of the rule under the blurb
+#let scholia-chapter(
+  title,
+  subtitle: none,
+  description: none,
+  level: 1,
+  subtitle-size: 1.1em,
+  description-size: 0.95em,
+  accent: gray.darken(25%),
+) = {
+  heading(level: level, title)
+
+  if subtitle != none {
+    block(above: -0.2em, below: 0.9em, text(
+      size: subtitle-size,
+      fill: accent,
+      style: "italic",
+    )[#subtitle])
+  }
+
+  if description != none {
+    block(
+      width: 100%,
+      above: 0.6em,
+      below: 1.2em,
+      inset: (bottom: 0.7em),
+      stroke: (bottom: 0.5pt + accent.lighten(50%)),
+      text(size: description-size, fill: accent)[#description],
+    )
+  }
+}
+
 // Main show-rule wrapper.
 //
 // Named arguments:
