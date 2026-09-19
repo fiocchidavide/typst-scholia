@@ -12,7 +12,8 @@
 #
 # What it does:
 #   1. Installs scholia into Typst's local package namespace (@local/scholia),
-#      so the new project compiles without the package being published.
+#      so the new project compiles without the package being published
+#      (see install-local.sh, which handles this step).
 #   2. Copies the template into <target-dir>.
 #   3. Rewrites the template's `@preview/scholia` import to `@local/scholia`.
 #   4. Runs `git init` and creates an initial commit.
@@ -55,21 +56,11 @@ if [ -z "$VERSION" ]; then
   exit 1
 fi
 
-# --- resolve Typst's local package directory (OS-dependent) -----------------
-case "$(uname)" in
-  Darwin) TYPST_DATA="$HOME/Library/Application Support/typst" ;;
-  *) TYPST_DATA="${XDG_DATA_HOME:-$HOME/.local/share}/typst" ;;
-esac
-LOCAL_PKG="$TYPST_DATA/packages/local/scholia/$VERSION"
-
 # --- 1. install scholia as a local package ----------------------------------
-if [ -d "$LOCAL_PKG" ] && [ "$FORCE" -eq 0 ]; then
-  echo "• local package @local/scholia:$VERSION already installed (use --force to refresh)"
+if [ "$FORCE" -eq 1 ]; then
+  "$SCHOLIA_DIR/install-local.sh" --force
 else
-  echo "• installing @local/scholia:$VERSION -> $LOCAL_PKG"
-  rm -rf "$LOCAL_PKG"
-  mkdir -p "$LOCAL_PKG"
-  cp "$SCHOLIA_DIR/lib.typ" "$SCHOLIA_DIR/theorems.typ" "$SCHOLIA_DIR/typst.toml" "$LOCAL_PKG/"
+  "$SCHOLIA_DIR/install-local.sh"
 fi
 
 # --- 2. copy the template into the target -----------------------------------

@@ -43,6 +43,16 @@ typst watch main.typ
 Pass `--force` to refresh the installed local package after you change scholia
 itself. Run `./new-notes.sh --help` for details.
 
+### Install the library locally (without scaffolding notes)
+
+If you just want `@local/scholia` available for an existing project, or to
+refresh it after editing scholia, without creating a new notes project:
+
+```bash
+./install-local.sh
+./install-local.sh --force   # refresh after changing scholia itself
+```
+
 ### Minimal document
 
 ```typ
