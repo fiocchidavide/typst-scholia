@@ -1,9 +1,8 @@
 # scholia
 
 A universal [Typst](https://typst.app) template for typeset **lecture notes and
-study scripts**. It wraps the [`ilm`](https://typst.app/universe/package/ilm)
-book template with a shared, colour-coded set of theorem-like environments and
-sensible defaults for multi-chapter documents.
+study scripts**. Self-contained book layout plus a shared, colour-coded set of
+theorem-like environments and sensible defaults for multi-chapter documents.
 
 It was extracted from a personal set of university notes so the same look and
 feel can be reused across courses.
@@ -12,11 +11,12 @@ feel can be reused across courses.
 
 ## Features
 
-- Book-style layout (cover, preface, abstract, ToC, running headers) via `ilm`.
+- Book-style layout: cover (with an optional image), preface, ToC, running
+  headers, bibliography.
 - Coloured, left-ruled environments: `definition`, `theorem`, `lemma`,
   `proposition`, `corollary`, `remark`, `example`, and `proof` (with a trailing
   QED symbol), all sharing a single counter that follows the heading numbering.
-- One-line document setup with pass-through to every `ilm` option.
+- One-line document setup.
 - Configurable numbering depth, colours, and block styling.
 
 ## Quick start
@@ -106,13 +106,13 @@ template/
 | `authors`           | `()`               | A string or array of author names.                                 |
 | `subtitle`          | `none`             | Cover subtitle.                                                    |
 | `institution`       | `none`             | Institution / course line on the cover.                            |
-| `date`              | `datetime.today()` | Document date.                                                     |
-| `abstract`          | `[]`               | Abstract content.                                                  |
+| `date` / `abstract` | —                  | Accepted but not currently rendered anywhere (there's no slot for them on the generated cover). |
 | `preface`           | `none`             | Preface content.                                                   |
 | `bibliography`      | `none`             | Pass `bibliography("refs.bib")` (built in your document so the path resolves there). |
 | `heading-numbering` | `"1.1"`            | Heading numbering pattern.                                         |
 | `cover-page`        | `auto`             | Override the generated cover with your own content, or `none`.     |
-| `..ilm-args`        | —                  | Any extra named arguments are forwarded to `ilm` (e.g. `footer`, `appendix`, `figure-index: (enabled: true)`). |
+| `cover-image`       | `none`             | Image shown above the title on the generated cover (ignored if `cover-page` overrides the cover). |
+| `paper-size`        | `"a4"`             | Forwarded to `set page(paper: ..)`.                                |
 
 ### Structure above the chapter
 
@@ -224,7 +224,6 @@ attribution on the right, with nothing dangling in between.
 
 ## Dependencies
 
-- [`ilm`](https://typst.app/universe/package/ilm) `2.1.1`
 - [`great-theorems`](https://typst.app/universe/package/great-theorems) `0.1.2`
 - [`rich-counters`](https://typst.app/universe/package/rich-counters) `0.2.2`
   — `0.2.2` fixes a *"Cannot join integer with integer"* crash that occurred

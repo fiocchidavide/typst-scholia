@@ -15,8 +15,6 @@
     ]
   ],
   bibliography: bibliography("refs.bib"),
-  // Any extra named arguments are forwarded to `ilm`, e.g.:
-  // figure-index: (enabled: true),
 )
 
 #for file in (

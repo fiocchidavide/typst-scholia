@@ -1,7 +1,8 @@
 // scholia — a universal template for typeset lecture notes / study scripts.
 //
-// Wraps the `ilm` book template with a shared set of theorem-like environments
-// (see `theorems.typ`) and sensible defaults for multi-chapter notes.
+// A self-contained book layout (cover, preface, ToC, running headers) with a
+// shared set of theorem-like environments (see `theorems.typ`) and sensible
+// defaults for multi-chapter notes.
 //
 //   #import "@preview/scholia:0.1.0": *
 //
@@ -13,9 +14,14 @@
 //
 //   #let (definition, theorem, proof, ..) = scholia-theorems()
 
-#import "@preview/ilm:2.1.1": ilm
 #import "@preview/great-theorems:0.1.2": great-theorems-init
 #import "theorems.typ": scholia-theorems
+
+// `bibliography` is also a parameter name on `scholia()` below, which would
+// shadow the built-in function within its body — alias it here, at module
+// scope, before that shadowing can happen, so `scholia()` can still use the
+// real function as a show-rule selector.
+#let std-bibliography = bibliography
 
 // Default cover page, mirroring the "notes on X" academic-script look.
 // `image` is optional (an `image(...)` call, or any content); when given, it
@@ -298,15 +304,25 @@
   }
 }
 
-// Main show-rule wrapper.
+// Main show-rule wrapper. Previously a thin wrapper around the `ilm` book
+// template; ilm's own cover page, footer, and chapter-pagebreak were always
+// overridden below whenever there was structure above the chapter (i.e.
+// always, for every document this package has actually been used for), and
+// its raw/table/blockquote/appendix/figure-index machinery was never
+// exercised at all — so what's left is inlined directly here instead of
+// carrying the whole dependency for a handful of `set`/`show` rules.
 //
 // Named arguments:
 //   title            — document title (content or string)
 //   authors          — a string or array of author names
 //   subtitle         — optional subtitle shown on the cover
 //   institution      — optional institution / course line on the cover
-//   date             — a `datetime` (default: today)
-//   abstract         — abstract content
+//   date / abstract  — accepted for API compatibility, but not currently
+//                      rendered anywhere: they were only ever shown by ilm's
+//                      own default cover, which `default-cover` (above)
+//                      replaces entirely, so this was already dead before
+//                      ilm was removed. Give them somewhere to render (e.g.
+//                      under the preface) if you want them back.
 //   preface          — optional preface content
 //   bibliography     — a `bibliography(...)` value, or none. Construct it in
 //                      your own document so the .bib path resolves there, e.g.
@@ -327,8 +343,7 @@
 //   cover-image      — optional image (an `image(...)` call, or any content)
 //                      shown above the title on the generated cover; ignored
 //                      if `cover-page` overrides the cover entirely
-//   ..ilm-args       — any extra named arguments are forwarded to `ilm`
-//                      (e.g. paper-size, figure-index: (enabled: true), ...)
+//   paper-size       — forwarded to `set page(paper: ..)` (default "a4")
 #let scholia(
   title: [Lecture Notes],
   authors: (),
@@ -345,7 +360,7 @@
   division-size: 1.25em,
   cover-page: auto,
   cover-image: none,
-  ..ilm-args,
+  paper-size: "a4",
   body,
 ) = {
   let chapter-level = structural-levels + 1
@@ -355,59 +370,68 @@
     cover-page
   }
 
-  show: ilm.with(
-    title: title,
-    authors: authors,
-    date: date,
-    abstract: abstract,
-    preface: preface,
-    bibliography: bibliography,
-    cover-page: cover,
-    // ilm's footer and chapter break are both hardwired to level 1, which is
-    // the area once there is structure above the chapter; scholia installs its
-    // own below. The default table-of-contents also collapses to just the
-    // structure above the chapter — with sections and blocks nested this
-    // deep, a flat global outline down to every heading is too long to be
-    // useful; each work carries its own local one instead
-    // (`scholia-work-outline`, wired into `scholia-work`).
-    ..(
-      if structural-levels > 0 {
-        (
-          footer: none,
-          chapter-pagebreak: false,
-          // Wraps the outline in a `show` scoped to this block, so a work's
-          // entry gets its author(s) appended as a small byline underneath —
-          // recovered from the `<scholia-work-authors>` metadata tag
-          // `scholia-work` leaves right after its own heading.
-          table-of-contents: {
-            show outline.entry: it => if it.level != 2 {
-              it
-            } else {
-              [
-                #it
-                #context {
-                  let matches = query(selector(<scholia-work-authors>).after(it.element.location()))
-                  let authors = if matches.len() > 0 { matches.first().value } else { none }
-                  // `it` is laid out as its own block (with the outline's usual
-                  // inter-entry spacing baked in), so a plain `linebreak()`
-                  // after it does nothing useful — a tiny explicit block,
-                  // rather than a new paragraph at the default block spacing,
-                  // is what actually hugs the byline to its own entry.
-                  if authors != none {
-                    block(above: 0.3em, below: 0.65em)[
-                      #h(1.6em)#text(size: 0.82em, style: "italic", fill: gray.darken(20%))[#authors]
-                    ]
-                  }
-                }
-              ]
-            }
-            outline(depth: structural-levels)
-          },
-        )
-      }
-    ),
-    ..ilm-args,
-  )
+  // Document-level set rules must come before any content, so this has to
+  // be the very first thing the function does.
+  let author-line = if type(authors) == array { authors.join(", ") } else { authors }
+  set document(title: title, author: author-line)
+
+  set page(paper: paper-size, margin: (bottom: 1.75cm, top: 2.25cm))
+  set text(size: 12pt)
+  set par(leading: 0.7em, spacing: 1.35em, justify: true, linebreaks: "optimized")
+  show heading: it => { it; v(2%, weak: true) }
+  show heading: set text(hyphenate: false)
+  set math.equation(numbering: "(1)")
+
+  // A small circle next to external links (e.g. a bibliography entry's own
+  // `url` field) — only string destinations get one, so internal `#ref` /
+  // `#cite` links (whose destination is a location or label) are untouched.
+  show link: it => {
+    it
+    if type(it.dest) == str {
+      sym.wj
+      h(1.6pt)
+      sym.wj
+      super(box(height: 3.8pt, circle(radius: 1.2pt, stroke: 0.7pt + rgb("#993333"))))
+    }
+  }
+
+  if cover != none { page(cover) }
+  if preface != none { page(preface) }
+
+  // The table of contents collapses to just the structure above the chapter
+  // — with sections and blocks nested this deep, a flat outline down to
+  // every heading is too long to be useful; each work carries its own local
+  // one instead (`scholia-work-outline`, wired into `scholia-work`). Wraps
+  // the outline in a `show` scoped to this block, so a work's entry gets its
+  // author(s) appended as a small byline underneath — recovered from the
+  // `<scholia-work-authors>` metadata tag `scholia-work` leaves right after
+  // its own heading.
+  if structural-levels > 0 {
+    show outline.entry: it => if it.level != 2 {
+      it
+    } else {
+      [
+        #it
+        #context {
+          let matches = query(selector(<scholia-work-authors>).after(it.element.location()))
+          let authors = if matches.len() > 0 { matches.first().value } else { none }
+          // `it` is laid out as its own block (with the outline's usual
+          // inter-entry spacing baked in), so a plain `linebreak()`
+          // after it does nothing useful — a tiny explicit block,
+          // rather than a new paragraph at the default block spacing,
+          // is what actually hugs the byline to its own entry.
+          if authors != none {
+            block(above: 0.3em, below: 0.65em)[
+              #h(1.6em)#text(size: 0.82em, style: "italic", fill: gray.darken(20%))[#authors]
+            ]
+          }
+        }
+      ]
+    }
+    outline(depth: structural-levels)
+  } else {
+    outline()
+  }
 
   show: great-theorems-init
 
@@ -428,5 +452,12 @@
     // sections; the offset drops them into place under the structure.
     set heading(offset: structural-levels)
     body
+  }
+
+  if bibliography != none {
+    pagebreak()
+    show std-bibliography: set text(0.85em)
+    show std-bibliography: set par(leading: 0.65em, justify: false, linebreaks: auto)
+    bibliography
   }
 }
